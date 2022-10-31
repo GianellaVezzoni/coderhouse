@@ -1,1 +1,1 @@
-[{"title":"Lapices","price":200,"thumbnail":"https://economiaparatodos.net/wp-content/uploads/LAPIZ-e1372204441533.jpg","id":0}]{"title":"Lapices","price":200,"thumbnail":"https://economiaparatodos.net/wp-content/uploads/LAPIZ-e1372204441533.jpg","id":1}
+[{"title":"Lapices","price":200,"thumbnail":"https://economiaparatodos.net/wp-content/uploads/LAPIZ-e1372204441533.jpg","id":1},{"title":"Lapices","price":200,"thumbnail":"https://economiaparatodos.net/wp-content/uploads/LAPIZ-e1372204441533.jpg","id":2}]
