@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Coderhouse | Productos</title>
+  </head>
+  <body class="body_container">
+    <h1 class="title">Cargar producto</h1>
+    <div class="form_container">
+      <form action="/api/productos/" method="post" enctype="multipart/form-data">
+        <label for="productName">Nombre del producto:</label><br />
+        <input class="customInput" required type="text" name="productName" value="" /><br />
+        <label for="price">Precio:</label><br />
+        <input class="customInput" required type="number" name="price" value="" /><br />
+        <label for="image">Foto del producto:</label><br /> 
+        <input
+          type="file"
+          name="productFile"
+          value=""
+          required
+          class="customInput"
+        /><br /><br />
+        <input class="button-submit" type="submit" value="Guardar" />
+      </form>
+    </div>
+  </body>
+</html>
+
+<style>
+  .body_container{
+    background-color: lightsalmon;
+  }
+  .title {
+    text-align: center;
+  }
+  .form_container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+  }
+  .customInput {
+    width: 90%;
+    margin-top: 5%;
+    margin-bottom: 5%;
+  }
+  .button-submit{
+    background: '#000';
+    border: none;
+    border-radius: 2px;
+    padding: 6px;
+    color: '#FFF';
+  }
+</style>
