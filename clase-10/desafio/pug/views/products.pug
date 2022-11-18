@@ -1,0 +1,36 @@
+extends layout
+
+block products
+    div 
+    .container
+        h4(style="margin-top:2%;margin-bottom:3%")='Historial de productos'
+        div
+            table.table
+                tr(style="color:black;")
+                    th="Nombre"
+                    th="Precio"
+                    th="Imagen"
+                tr
+                if products
+                    each item in products
+                        tr.tData
+                            td
+                                p!=item.productName
+                            td
+                                p!=item.productPrice
+                            td
+                                img(src!=item.productImage width=50 height=50)
+                        tr
+                else
+                    tr.tData
+                        td
+                            p="No hay productos"
+                        td
+                            p="-"
+                        td
+                            p="-"
+                    tr
+            table
+            a(href='/') Cargar producto
+        div
+    div

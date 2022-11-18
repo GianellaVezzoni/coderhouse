@@ -1,0 +1,2 @@
+Me gusta más el motor de plantillas ´pug´. Me es más sencillo poder armar vistas 
+y entender la jerarquía de los elementos que componen un archivo.

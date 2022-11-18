@@ -1,0 +1,36 @@
+extends layout
+
+block form
+    div(style='justify-content: center;display: flex;flex-direction: column;align-items: center;background-color: lightsalmon;height: 100vh;margin: -1%;')
+        h1="Cargar productos"
+        div.container(style="justify-content: center;align-items: center;margin-top: 2%;")
+            form(role="form" method="post" action='/productos' style="justify-content:center;align-items:center;margin-top:2%;")
+                div.form-group(style="margin-top:2%;margin-bottom: 2%;")
+                    div.container
+                        div.form-group
+                            label(for='productName') Nombre producto
+                                input#productName(type='text', name='productName', style="width:100%;boder-radius:8px;border:none;padding:4px;")
+                        div
+                    div
+                    div.container
+                        div.form-group
+                            label(for='productPrice') Precio
+                                input#productPrice(type='number', placeholder='$0,00', name='productPrice', style="width:100%;boder-radius:8px;border:none;padding:4px;")
+                        div
+                    div
+                    div.container
+                        div.form-group
+                            label(for='productImage') Foto del producto
+                                input#productImage(type='text', placeholder='Imagen', name='productImage', style="width:100%;boder-radius:8px;border:none;padding:4px;")
+                        div
+                        small
+                            p='Puedes elegir la url de la imagen que desees'
+                            a(href='https://www.iconfinder.com/free_icons' target='_blank') https://www.iconfinder.com/free_icons
+                        small
+                    div
+                div
+                button.btn.btn-primary(type='Submit' style="border:none;background-color:black;color:white;padding:10px;border-radius:8px;") Guardar
+            form
+            a(href='/productos') Ver productos
+        div
+    div
