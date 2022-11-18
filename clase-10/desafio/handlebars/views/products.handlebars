@@ -1,0 +1,38 @@
+<div class="container">
+    <h4 class="title">
+    Historial de productos
+    </h4>
+    <div class="table-responsive">
+        <table class="table table-dark">
+            <tr style="color: yellow;">
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Imagen</th>
+            </tr>
+            {{#if products}}
+                {{#each products}}
+                <tr class="tData">
+                    <td><p>{{productName}}</p></td>
+                    <td><p>${{productPrice}}</p></td>
+                    <td><img width="50" height="50" src={{productImage}} /></td>
+                </tr>
+                {{/each}}
+            {{else}}
+                <tr class="tData">
+                <td><p>No hay productos</p></td>
+                <td>-</td>
+                <td>-</td>
+                </tr>
+            {{/if}}
+        </table>
+        <a href="/">Cargar producto</a>
+    </div>
+</div>
+<style>
+    .title{
+        margin-top: 2%;
+    }
+    .table-responsive{
+        margin-top: 2%;
+    }
+</style>
