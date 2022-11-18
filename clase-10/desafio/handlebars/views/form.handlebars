@@ -1,0 +1,66 @@
+<div class="main-container">
+    <h2>Cargar productos</h2>
+    <form class="form-container" method="post" action="/productos">
+        <div class="form-group input-row">
+            <div class="container">
+                <label for="productName">Nombre producto</label>
+                <input type="text" class="form-control" id="productName" name="productName" value=""
+                    placeholder="Ingrese un nombre" style="width:100%;boder-radius:8px;border:none;padding:4px;" />
+            </div>
+        </div>
+        <div class="container">
+            <div class="form-group input-row">
+                <label for="productPrice">Precio</label>
+                <input type="number" class="form-control" id="productPrice" name="productPrice" value=""
+                    placeholder="$0,00" style="width:100%;boder-radius:8px;border:none;padding:4px;" />
+            </div>
+        </div>
+        <div class="container">
+            <div class="form-group input-row">
+                <label for="productImage">Foto del producto</label>
+                <input type="text" class="form-control" id="productImage" name="productImage" value=""
+                    placeholder="Imagen" style="width:100%;boder-radius:8px;border:none;padding:4px;" />
+                <small>Puedes elegir la url de la imagen que desees <a target="_blank"
+                        href='https://www.iconfinder.com/free_icons'>https://www.iconfinder.com/free_icons</a></small>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary button-submit">Guardar</button>
+    </form>
+    <a href="/productos">Ver productos</a>
+</div>
+
+<style>
+    .main-container {
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: lightsalmon;
+        height: 100vh;
+        margin: -1%;
+    }
+
+    .form-container {
+        justify-content: center;
+        align-items: center;
+        margin-top: 2%;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-row {
+        margin-top: 2%;
+        margin-bottom: 2%;
+    }
+
+    .button-submit {
+        border: none;
+        background-color: black;
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+    }
+</style>
