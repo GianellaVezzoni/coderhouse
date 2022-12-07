@@ -1,0 +1,12 @@
+.not-found-container {
+   justify-content: center; 
+   align-items: center;
+   display: flex;
+   flex-direction: column;
+   margin-top: 10%;
+}
+
+.not-founde-title{
+    font-size: 80px;
+    margin-bottom: 0%;
+}
