@@ -96,7 +96,7 @@ module.exports = class ProductContainer {
    const elementToUpdate = productsParsed.find(
     (element) => element.id === parseInt(productId)
    );
-   let product = null;
+   let product;
    if (elementToUpdate) {
     product = {
      ...elementToUpdate,
@@ -126,7 +126,8 @@ module.exports = class ProductContainer {
        ? productData?.stock
        : elementToUpdate.stock,
     };
-    productsParsed[elementToUpdate.id] = product;
+    const index = productsParsed.findIndex(element => element.id === elementToUpdate.id);
+    productsParsed[index] = product;
     await fs.promises.writeFile(
      this.fileName,
      JSON.stringify(productsParsed),

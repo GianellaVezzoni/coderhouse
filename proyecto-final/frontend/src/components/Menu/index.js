@@ -5,13 +5,13 @@ import "./Menu.css";
 const Menu = () => {
  return (
   <div className="menu-container">
-   <a href="#" className="menu-item">
+   <a href="/" className="menu-item">
     Productos
    </a>
-   <a href="#" className="menu-item">
+   <a href="/productos" className="menu-item">
     Cargar productos
    </a>
-   <a href="#" className="menu-item">
+   <a href="/carrito" className="menu-item">
     Carrito
    </a>
   </div>

@@ -62,23 +62,20 @@ module.exports = class CartContainer {
   }
  }
 
- async saveProducts(cartId, productInfo) {
+ async saveProducts(cartId, productFile) {
   if (fs.existsSync(this.fileName)) {
-   const file = await fs.promises.readFile(this.fileName, "utf-8");
+   const file = await fs.promises.readFile(productFile, "utf-8");
    const fileParsed = JSON.parse(file);
-   const cartFounded = fileParsed.find((cart) => cart.id === parseInt(cartId));
-   if (cartFounded) {
-    const product = {
-     ...productInfo,
-     id:
-      cartFounded.productos.length > 0
-       ? cartFounded.productos[cartFounded.productos.length - 1].id + 1
-       : 0,
-    };
-    cartFounded.productos.push(product);
+   const productFounded = fileParsed.find(
+    (element) => element.id === parseInt(cartId)
+   );
+   const cartFounded = await fs.promises.readFile(this.fileName, "utf-8");
+   if (cartFounded && productFounded) {
+    const cartParsed = JSON.parse(cartFounded);
+    cartParsed[0].productos.push(productFounded);
     await fs.promises.writeFile(
      this.fileName,
-     JSON.stringify([cartFounded]),
+     JSON.stringify(cartParsed),
      "utf-8"
     );
     return true;

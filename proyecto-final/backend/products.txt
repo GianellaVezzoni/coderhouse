@@ -1,0 +1,1 @@
+[{"nombre":"Michi editado por mi","descripcion":"michi descripcion","codigo":"AAA11","foto":"https://www.elsoldemexico.com.mx/doble-via/b6w9mw-el-origen-del-nombre-michi.png/ALTERNATES/LANDSCAPE_960/El%20origen%20del%20nombre%20michi.png","precio":"20000","stock":"10","id":2,"timestamp":1670393419054}]

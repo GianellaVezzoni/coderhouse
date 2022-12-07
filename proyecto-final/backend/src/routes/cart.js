@@ -2,6 +2,7 @@ const express = require("express");
 const CartContainer = require("../persistence/cartContainer");
 const router = express.Router();
 const fileName = "cart.txt";
+const productsFileName = "products.txt"
 
 router.post("/", async (req, res) => {
  try {
@@ -11,6 +12,7 @@ router.post("/", async (req, res) => {
    return res.status(200).json({
     status: "success",
     message: `Carrito creado!. ID ${cartCreated}`,
+    id: cartCreated
    });
   } else {
    return res.status(400).json({
@@ -82,9 +84,8 @@ router.get("/:id/productos", async(req, res) => {
 router.post("/:id/productos", async(req, res) => {
  try {
   const { id } = req.params;
-  const productInfo = req.body;
   const cart = new CartContainer(fileName);
-  const productAdded = await cart.saveProducts(id, productInfo);
+  const productAdded = await cart.saveProducts(id, productsFileName);
   if (productAdded) {
    return res.status(200).json({
     status: "success",
