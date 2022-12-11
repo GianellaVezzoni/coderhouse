@@ -1,6 +1,4 @@
-const knex = require("knex")
-
-class ContenedorMensajes {
+module.exports = class ContenedorMensajes {
     constructor(options){
         this.knex = options;
     }
@@ -30,5 +28,3 @@ class ContenedorMensajes {
     }
 
 }
-
-export default ContenedorMensajes;

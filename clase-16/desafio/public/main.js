@@ -24,8 +24,8 @@ function addProduct() {
  return;
 }
 
-socket.on("messages", (data) => {
- const html = data.map((msje) => {
+socket.on("messages", (mess) => {
+ const html = mess.map((msje) => {
   return `<div>
             <p style="color:blue;font-weight:600;">${msje.email}</p>
             <p style="color:brown;margin-bottom: 0px;
