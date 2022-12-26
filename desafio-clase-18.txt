@@ -1,0 +1,33 @@
+- Creamos base de datos ecommerce -> use ecommerce
+- Creamos colleción llamada mensajes -> db.createCollection("mensajes")
+- Creamos colleción llamada productos -> db.createCollection("productos")
+
+1- Insertar varios registros en la colección de mensajes:
+db.mensajes.insertMany([{"email":"pepe.00@gmail.com","text":"Hola mundo", "date":"10/12/2022"}, {"email":"juan.perez@hotmail.com","text":"Mensaje..."},{"email":"admin032@gmail.com","text":"Esto es un texto", "date":"15/11/2022"}]);
+
+Insertar varios registros en la colección de productos:
+db.productos.insertMany([{"productName":"Teclado", "productPrice":360, "productImage":"https://http2.mlstatic.com/D_NQ_NP_944449-MLA50305077491_062022-O.jpg"},{"productName":"Mouse", "productPrice":500, "productImage":""},{"productName":"Gabinete", "productPrice":4900, "productImage":"https://m.media-amazon.com/images/I/71z7ztyH1LL.jpg"},{"productName":"Pad de mouse", "productPrice":900, "productImage":"https://m.media-amazon.com/images/I/71z7ztyH1LL.jpg"},{"productName":"Monitor", "productPrice":4320, "productImage":"https://m.media-amazon.com/images/I/71z7ztyH1LL.jpg"},
+{"productName":"Monitor curvo", "productPrice":2050, "productImage":"https://m.media-amazon.com/images/I/71z7ztyH1LL.jpg"}, {"productName":"Memoria RAM", "productPrice":2090, "productImage":"https://m.media-amazon.com/images/I/71z7ztyH1LL.jpg"}])
+
+3- Listar todos los documentos de cada colección:
+
+db.mensajes.find()
+db.productos.find()
+
+4- Mostrar la cantidad de documentos almacenados en cada una de ellas:
+db.mensajes.estimatedDocumentCount()
+db.productos.estimatedDocumentCount()
+
+--- CRUD ---
+5a- db.productos.insertOne({"productName":"Teclado con luces RGB", "productPrice":360, "productImage":"https://http2.mlstatic.com/D_NQ_NP_944449-MLA50305077491_062022-O.jpg"})
+5b i- db.productos.find({"productPrice":{$lt:1000}})
+5b ii- db.productos.find({"productPrice": {$gte: 1000, $lte: 3000}})
+5b iii- db.productos.find({"productPrice": {$gt: 3000}})
+5b iv- db.productos.find({},{"productName":1}).sort({"productPrice":1}).skip(2).limit(1)
+5c- db.productos.updateMany({},{$set:{"stock":100}})
+5d- db.productos.updateMany({"productPrice": {$gt: 4000}}, {$set: {"stock": 0}})
+5e- db.productos.deleteMany({"productPrice": {$lt: 1000}})
+
+6- Creamos usuario llamado pepe que solo pueda leer la base de datos ecommerce
+use admin
+db.createUser({user: 'pepe', pwd:'asd456', roles:[{role: "read", db:"ecommerce"}]})
