@@ -1,5 +1,5 @@
 const express = require("express");
-const ProductContainer = require("../persistence/ProductContainer");
+const ProductContainer = require("../containers/memory/productContainer");
 const router = express.Router();
 const fileName = "products.txt";
 const isAdmin = true;
