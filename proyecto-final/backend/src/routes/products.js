@@ -2,6 +2,8 @@ const express = require("express");
 const ProductMongoDbController = require("../containers/mongo/products/ProductMongoDbController");
 const router = express.Router();
 const isAdmin = true;
+const ProductFirebaseController = require("../containers/firebase/products/ProductFirebaseController");
+const productFirebase = new ProductFirebaseController();
 
 const verifyRole = (_, res, next) => {
  if (isAdmin) {
@@ -19,15 +21,19 @@ router.get("/:id?", async (req, res) => {
   const { id } = req?.params;
   const product = new ProductMongoDbController();
   let productData = [];
+  let productDataFb = [];
   if (id) {
+   productDataFb = await productFirebase.getProductsById(id);
    productData = await product.getProductsById(id);
   } else {
+   productDataFb = await productFirebase.getAllProducts();
    productData = await product.getProducts();
   }
   if (productData?.length || productData !== null) {
    return res.status(200).json({
     status: "success",
     products: productData,
+    productDataFb: productDataFb,
    });
   } else {
    return res.status(200).json({
@@ -48,7 +54,11 @@ router.post("/", verifyRole, async (req, res) => {
   const productData = req.body;
   const product = new ProductMongoDbController();
   const productCreatedId = await product.createProduct(productData);
-  if (productCreatedId) {
+  const productCreated = await productFirebase.createProduct(
+   productData,
+   productCreatedId._id
+  );
+  if (productCreatedId && productCreated) {
    return res.status(200).json({
     status: "success",
     message: `Producto creado! ID asignado ${productCreatedId._id}`,
@@ -60,7 +70,7 @@ router.post("/", verifyRole, async (req, res) => {
    });
   }
  } catch (err) {
-    console.log(err)
+  console.log(err);
   return res.status(400).json({
    status: "error",
    error: "Error al crear el producto.",
@@ -74,7 +84,11 @@ router.put("/:id", verifyRole, async (req, res) => {
   const { id } = req.params;
   const product = new ProductMongoDbController();
   const productUpdated = await product.updateProductById(id, productData);
-  if (productUpdated) {
+  const fbProdUpdated = await productFirebase.updateProductById(
+   id,
+   productData
+  );
+  if (productUpdated && fbProdUpdated) {
    return res.status(200).json({
     status: "success",
     message: `Producto actualizado!.`,
@@ -99,7 +113,8 @@ router.delete("/:id", verifyRole, async (req, res) => {
   const { id } = req.params;
   const product = new ProductMongoDbController();
   const productDeleted = await product.deleteById(id);
-  if (productDeleted) {
+  const productFbDeleted = await productFirebase.deleteProductById(id);
+  if (productDeleted && productFbDeleted) {
    return res.status(200).json({
     status: "success",
     message: `Producto eliminado!`,
