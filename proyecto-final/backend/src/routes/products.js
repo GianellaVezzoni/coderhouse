@@ -1,10 +1,9 @@
 const express = require("express");
-const ProductContainer = require("../containers/memory/productContainer");
+const ProductMongoDbController = require("../containers/mongo/products/ProductMongoDbController");
 const router = express.Router();
-const fileName = "products.txt";
 const isAdmin = true;
 
-const verifyRole = (req, res, next) => {
+const verifyRole = (_, res, next) => {
  if (isAdmin) {
   next();
  } else {
@@ -18,7 +17,7 @@ const verifyRole = (req, res, next) => {
 router.get("/:id?", async (req, res) => {
  try {
   const { id } = req?.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   let productData = [];
   if (id) {
    productData = await product.getProductsById(id);
@@ -47,12 +46,12 @@ router.get("/:id?", async (req, res) => {
 router.post("/", verifyRole, async (req, res) => {
  try {
   const productData = req.body;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productCreatedId = await product.createProduct(productData);
   if (productCreatedId) {
    return res.status(200).json({
     status: "success",
-    message: `Producto creado!. id asignado ${productCreatedId.id}`,
+    message: `Producto creado! ID asignado ${productCreatedId._id}`,
    });
   } else {
    return res.status(400).json({
@@ -60,7 +59,8 @@ router.post("/", verifyRole, async (req, res) => {
     message: "Error al crear el producto.",
    });
   }
- } catch (_) {
+ } catch (err) {
+    console.log(err)
   return res.status(400).json({
    status: "error",
    error: "Error al crear el producto.",
@@ -72,7 +72,7 @@ router.put("/:id", verifyRole, async (req, res) => {
  try {
   const productData = req.body;
   const { id } = req.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productUpdated = await product.updateProductById(id, productData);
   if (productUpdated) {
    return res.status(200).json({
@@ -86,10 +86,10 @@ router.put("/:id", verifyRole, async (req, res) => {
     message: "Error al actualizar el producto.",
    });
   }
- } catch (_) {
+ } catch (err) {
   return res.status(400).json({
    status: "error",
-   error: "Error al crear el producto.",
+   error: "Error al actualizar el producto.",
   });
  }
 });
@@ -97,7 +97,7 @@ router.put("/:id", verifyRole, async (req, res) => {
 router.delete("/:id", verifyRole, async (req, res) => {
  try {
   const { id } = req.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productDeleted = await product.deleteById(id);
   if (productDeleted) {
    return res.status(200).json({
@@ -107,13 +107,13 @@ router.delete("/:id", verifyRole, async (req, res) => {
   } else {
    return res.status(400).json({
     status: "error",
-    message: "Error al crear el producto.",
+    message: "Error al eliminar el producto.",
    });
   }
  } catch (_) {
   return res.status(400).json({
    status: "error",
-   error: "Error al crear el producto.",
+   error: "Error al eliminar el producto.",
   });
  }
 });
