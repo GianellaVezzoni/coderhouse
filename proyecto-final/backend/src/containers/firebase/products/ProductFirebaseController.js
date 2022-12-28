@@ -1,8 +1,8 @@
-const FirebaseController = require("../FirebaseController");
 const admin = require("firebase-admin");
+const FirebaseController = require('../FirebaseController');
 class ProductFirebaseController {
  constructor() {
-  this.connection = new FirebaseController().connect("products");
+    this.connection = new FirebaseController().connect();
   this.db = admin.firestore();
   this.query = this.db.collection("products");
  }

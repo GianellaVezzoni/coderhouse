@@ -1,15 +1,12 @@
 const express = require("express");
 const CartMongoDbController = require("../containers/mongo/cart/CartMongoDbController");
 const router = express.Router();
-const CartFirebase = require("../containers/firebase/cart/CartFirebase");
-const cartFirebase = new CartFirebase();
 
 router.post("/", async (_, res) => {
  try {
   const cart = new CartMongoDbController();
   const cartCreated = await cart.createCart();
-  const cartfbCreated = await cartFirebase.createCart(cartCreated?._id);
-  if (cartCreated?._id !== undefined && cartfbCreated) {
+  if (cartCreated?._id !== undefined) {
    return res.status(200).json({
     status: "success",
     message: `Carrito creado!. ID ${cartCreated._id}`,
@@ -22,7 +19,7 @@ router.post("/", async (_, res) => {
    });
   }
  } catch (err) {
-  console.log(err);
+  console.log("error al crear carrito ", err);
   return res.status(400).json({
    status: "error",
    error: err,
@@ -33,7 +30,6 @@ router.post("/", async (_, res) => {
 router.delete("/:id", async (req, res) => {
  try {
   const { id } = req.params;
-  cartFirebase.deleteCartById(id);
   const cart = new CartMongoDbController();
   const cartDeleted = await cart.deleteCartById(id);
   if (cartDeleted.deletedCount > 0) {
@@ -59,7 +55,6 @@ router.delete("/:id", async (req, res) => {
 router.get("/:id/productos", async (req, res) => {
  try {
   const { id } = req.params;
-  cartFirebase.getProductsById(id);
   const cart = new CartMongoDbController();
   const productsFounded = await cart.showProducts(id);
   if (productsFounded.length > 0) {
@@ -90,7 +85,6 @@ router.post("/:id/productos", async (req, res) => {
  try {
   const { id } = req.params;
   const product = req.body;
-  cartFirebase.addProductToCart(id, product);
   const cart = new CartMongoDbController();
   const productAdded = await cart.addProductToCart(id, product);
   if (productAdded) {
@@ -115,7 +109,6 @@ router.post("/:id/productos", async (req, res) => {
 router.delete("/:id/productos/:id_prod", async (req, res) => {
  try {
   const { id, id_prod } = req.params;
-  cartFirebase.deleteProductFromCart(id, id_prod);
   const cart = new CartMongoDbController();
   const productDeleted = await cart.deleteProductFromCartById(id, id_prod);
   if (productDeleted) {
