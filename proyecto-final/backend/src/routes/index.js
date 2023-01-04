@@ -1,8 +1,8 @@
 const express = require('express');
 const { Router } = express;
 const router = new Router();
-const products = require('../routes/products');
-const cart = require('../routes/cart');
+const products = require('../modules/products/routes/products');
+const cart = require('../modules/cart/routes/cart');
 
 router.use('/productos', products);
 router.use('/carrito', cart);
