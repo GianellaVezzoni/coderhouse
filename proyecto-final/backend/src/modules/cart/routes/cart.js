@@ -1,18 +1,16 @@
 const express = require("express");
-const CartContainer = require("../controllers/CartMongoController");
+const CartMongoDbController = require("../containers/mongo/cart/CartMongoDbController");
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/", async (_, res) => {
  try {
-    console.log("en el post ")
-  const cart = new CartMongoController();
+  const cart = new CartMongoDbController();
   const cartCreated = await cart.createCart();
-  console.log("cartCreated ", cartCreated)
-  if (cartCreated >= 0) {
+  if (cartCreated?._id !== undefined) {
    return res.status(200).json({
     status: "success",
-    message: `Carrito creado!. ID ${cartCreated}`,
-    id: cartCreated
+    message: `Carrito creado!. ID ${cartCreated._id}`,
+    id: cartCreated,
    });
   } else {
    return res.status(400).json({
@@ -21,6 +19,7 @@ router.post("/", async (req, res) => {
    });
   }
  } catch (err) {
+  console.log("error al crear carrito ", err);
   return res.status(400).json({
    status: "error",
    error: err,
@@ -28,15 +27,15 @@ router.post("/", async (req, res) => {
  }
 });
 
-router.delete("/:id", async(req, res) => {
+router.delete("/:id", async (req, res) => {
  try {
   const { id } = req.params;
-  const cart = new CartContainer(fileName);
-  const cartDeleted = await cart.deleteCart(id);
-  if (cartDeleted >= 0 && cartDeleted !== null) {
+  const cart = new CartMongoDbController();
+  const cartDeleted = await cart.deleteCartById(id);
+  if (cartDeleted.deletedCount > 0) {
    return res.status(200).json({
     status: "success",
-    message: `Carrito eliminado!. ID ${cartDeleted}`,
+    message: `Carrito eliminado!. ID ${id}`,
    });
   } else {
    return res.status(400).json({
@@ -45,6 +44,7 @@ router.delete("/:id", async(req, res) => {
    });
   }
  } catch (err) {
+  console.log("el error ", err);
   return res.status(400).json({
    status: "error",
    error: err,
@@ -52,15 +52,15 @@ router.delete("/:id", async(req, res) => {
  }
 });
 
-router.get("/:id/productos", async(req, res) => {
+router.get("/:id/productos", async (req, res) => {
  try {
   const { id } = req.params;
-  const cart = new CartContainer(fileName);
-  const products = await cart.showProducts(id);
-  if (products.length > 0 && products !== null) {
+  const cart = new CartMongoDbController();
+  const productsFounded = await cart.showProducts(id);
+  if (productsFounded.length > 0) {
    return res.status(200).json({
     status: "success",
-    products: products,
+    products: productsFounded[0].products,
    });
   } else if (products === null) {
    return res.status(400).json({
@@ -81,11 +81,12 @@ router.get("/:id/productos", async(req, res) => {
  }
 });
 
-router.post("/:id/productos", async(req, res) => {
+router.post("/:id/productos", async (req, res) => {
  try {
   const { id } = req.params;
-  const cart = new CartContainer(fileName);
-  const productAdded = await cart.saveProducts(id, productsFileName);
+  const product = req.body;
+  const cart = new CartMongoDbController();
+  const productAdded = await cart.addProductToCart(id, product);
   if (productAdded) {
    return res.status(200).json({
     status: "success",
@@ -105,11 +106,11 @@ router.post("/:id/productos", async(req, res) => {
  }
 });
 
-router.delete("/:id/productos/:id_prod", async(req, res) => {
+router.delete("/:id/productos/:id_prod", async (req, res) => {
  try {
   const { id, id_prod } = req.params;
-  const cart = new CartContainer(fileName);
-  const productDeleted = await cart.deleteProduct(id, id_prod);
+  const cart = new CartMongoDbController();
+  const productDeleted = await cart.deleteProductFromCartById(id, id_prod);
   if (productDeleted) {
    return res.status(200).json({
     status: "success",

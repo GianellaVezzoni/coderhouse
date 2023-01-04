@@ -1,10 +1,11 @@
 const express = require("express");
-const ProductContainer = require("../controllers/ProductControllers");
+const ProductMongoDbController = require("../containers/mongo/products/ProductMongoDbController");
 const router = express.Router();
-const fileName = "products.txt";
 const isAdmin = true;
+const ProductFirebaseController = require("../containers/firebase/products/ProductFirebaseController");
+const productFirebase = new ProductFirebaseController();
 
-const verifyRole = (req, res, next) => {
+const verifyRole = (_, res, next) => {
  if (isAdmin) {
   next();
  } else {
@@ -18,17 +19,21 @@ const verifyRole = (req, res, next) => {
 router.get("/:id?", async (req, res) => {
  try {
   const { id } = req?.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   let productData = [];
+  let productDataFb = [];
   if (id) {
+   productDataFb = await productFirebase.getProductsById(id);
    productData = await product.getProductsById(id);
   } else {
+   productDataFb = await productFirebase.getAllProducts();
    productData = await product.getProducts();
   }
   if (productData?.length || productData !== null) {
    return res.status(200).json({
     status: "success",
     products: productData,
+    productDataFb: productDataFb,
    });
   } else {
    return res.status(200).json({
@@ -47,12 +52,16 @@ router.get("/:id?", async (req, res) => {
 router.post("/", verifyRole, async (req, res) => {
  try {
   const productData = req.body;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productCreatedId = await product.createProduct(productData);
-  if (productCreatedId) {
+  const productCreated = await productFirebase.createProduct(
+   productData,
+   productCreatedId._id
+  );
+  if (productCreatedId && productCreated) {
    return res.status(200).json({
     status: "success",
-    message: `Producto creado!. id asignado ${productCreatedId.id}`,
+    message: `Producto creado! ID asignado ${productCreatedId._id}`,
    });
   } else {
    return res.status(400).json({
@@ -60,7 +69,8 @@ router.post("/", verifyRole, async (req, res) => {
     message: "Error al crear el producto.",
    });
   }
- } catch (_) {
+ } catch (err) {
+  console.log(err);
   return res.status(400).json({
    status: "error",
    error: "Error al crear el producto.",
@@ -72,9 +82,13 @@ router.put("/:id", verifyRole, async (req, res) => {
  try {
   const productData = req.body;
   const { id } = req.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productUpdated = await product.updateProductById(id, productData);
-  if (productUpdated) {
+  const fbProdUpdated = await productFirebase.updateProductById(
+   id,
+   productData
+  );
+  if (productUpdated && fbProdUpdated) {
    return res.status(200).json({
     status: "success",
     message: `Producto actualizado!.`,
@@ -86,10 +100,10 @@ router.put("/:id", verifyRole, async (req, res) => {
     message: "Error al actualizar el producto.",
    });
   }
- } catch (_) {
+ } catch (err) {
   return res.status(400).json({
    status: "error",
-   error: "Error al crear el producto.",
+   error: "Error al actualizar el producto.",
   });
  }
 });
@@ -97,9 +111,10 @@ router.put("/:id", verifyRole, async (req, res) => {
 router.delete("/:id", verifyRole, async (req, res) => {
  try {
   const { id } = req.params;
-  const product = new ProductContainer(fileName);
+  const product = new ProductMongoDbController();
   const productDeleted = await product.deleteById(id);
-  if (productDeleted) {
+  const productFbDeleted = await productFirebase.deleteProductById(id);
+  if (productDeleted && productFbDeleted) {
    return res.status(200).json({
     status: "success",
     message: `Producto eliminado!`,
@@ -107,13 +122,13 @@ router.delete("/:id", verifyRole, async (req, res) => {
   } else {
    return res.status(400).json({
     status: "error",
-    message: "Error al crear el producto.",
+    message: "Error al eliminar el producto.",
    });
   }
  } catch (_) {
   return res.status(400).json({
    status: "error",
-   error: "Error al crear el producto.",
+   error: "Error al eliminar el producto.",
   });
  }
 });
