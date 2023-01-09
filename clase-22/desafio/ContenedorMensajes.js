@@ -11,11 +11,12 @@ module.exports = class ContenedorMensajes {
                 table.string('email', 100).notNullable()
                 table.string('text', 100)
                 table.string('date', 20)
-            })
+            });
         })
     }
 
     createMessage(message){
+
         return this.knex.from('messages').insert(message);
     }
 
