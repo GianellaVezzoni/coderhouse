@@ -60,8 +60,13 @@
             Centro de mensajes
         </h4>
         <form class="form-inline" onsubmit="return addMessage(this)" autocomplete="off">
+            <input type="text" required="true" id="name" class="form-control my-2 mr-2" placeholder="Nombre">
+            <input type="text" required="true" id="lastname" class="form-control my-2 mr-2" placeholder="Apellido">
+            <input type="number" required="true" id="age" class="form-control my-2 mr-2" placeholder="Edad">
+            <input type="text" required="true" id="alias" class="form-control my-2 mr-2" placeholder="Alias">
             <input type="text" required="true" id="email" class="form-control my-2 mr-2" placeholder="Email">
             <input type="text" required="true" id="text" class="form-control my-2 mr-2" placeholder="Deja tu mensaje..">
+            <input type="text" required="true" id="avatar" class="form-control my-2 mr-2" placeholder="Url de tu avatar">
             <input class="btn btn-primary my-2" type="submit" value="Enviar">
        </form>
        <div class="messages-container" id="messages"></div>

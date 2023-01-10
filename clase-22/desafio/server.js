@@ -16,6 +16,8 @@ const ContenedorMensajes = require("./ContenedorMensajes");
 const sql = new Contenedor(knex);
 const sqlite = new ContenedorMensajes(knexSqlite);
 const ContenedorProductos = require("./ContenedorProductos");
+const productsObj = new ContenedorProductos(5);
+const ContenedorMensajesNormalized = require('./ContenedorMensajesNormalized');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -26,28 +28,6 @@ app.set("view engine", "handlebars");
 
 sql.createTable().then(() => console.log("Tabla creada"));
 sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
-
-let messages = [];
-
-io.on("connection", (socket) => {
-  sql.listProducts().then((prod) => {
-    socket.emit("products", prod);
-  });
-  socket.on("new-product", (data) => {
-    sql.insertProduct(data).then((prod) => {
-      io.sockets.emit("products", prod);
-    });
-  });
-  sqlite.getMessages().then(messagesList => {
-    messages = messagesList;
-    socket.emit("messages", messagesList);
-  });
-  socket.on("new-message", (data) => {
-    sqlite.createMessage(data).then((mess) => {
-      io.sockets.emit("messages", mess);
-    });
-  });
-});
 
 app.get("/", (_, res) => {
   sql.listProducts().then((prod) => {
@@ -72,12 +52,27 @@ app.post("/productos", (req, res) => {
 
 app.get("/productos-test", (req, res) => {
   try {
-      const productsObj = new ContenedorProductos(5);
       const products = productsObj.generateProducts();
      res.render("table", {products});
   } catch (err) {
     res.render("modal", { title: "Error al cargar los productos", message: "" });
   }
+});
+
+io.on("connection", (socket) => {
+  const products = productsObj.generateProducts();
+  socket.emit("products", products);
+  socket.on("new-product", (data) => {
+    sql.insertProduct(data).then((prod) => {
+      io.sockets.emit("products", prod);
+    });
+  });
+  const messageList = ContenedorMensajesNormalized.getAllMessages();
+  socket.emit("messages", messageList);
+  socket.on("new-message", (data) => {
+    const message = ContenedorMensajesNormalized.save(data);
+    io.sockets.emit("messages", message);
+  });
 });
 
 httpServer.listen(PORT, () => {
