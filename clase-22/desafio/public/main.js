@@ -1,3 +1,4 @@
+const normalize = normalize();
 const socket = io();
 
 socket.on("products", (data) => {
@@ -25,7 +26,18 @@ function addProduct() {
 }
 
 socket.on("messages", (mess) => {
- const html = mess.map((msje) => {
+    const authorSchema = new normalize.schema.Entity("author", {}, {idAttribute: "email"});
+    const messageSchema = new normalize.schema.Entity("message", {author: authorSchema});
+    const messagesSchema = new normalize.schema.Entity("messages", {
+        messages: [messageSchema]
+    });
+    const dataDenormalized = normalize.denormalize(mess.result, messagesSchema, data.entities);
+    const normalizeSize = JSON.stringify(mess).length;
+    const denormalizeSize = JSON.stringify(dataDenormalized).length;
+    const percentage = 100 - (normalizeSize * 100 / denormalizeSize);
+    console.log("porcentaje reducido %", percentage);
+    
+ const html = dataDenormalized.map((msje) => {
   return `<div>
             <p style="color:blue;font-weight:600;">${msje.name} ${msje.lastname} (${msje.age})</p>
             <p style="color:blue;font-weight:600;"><${msje.alias}> ${msje.email}</p>
@@ -41,14 +53,16 @@ socket.on("messages", (mess) => {
 
 async function addMessage() {
  const message = {
-  email: document.getElementById("email").value,
-  text: document.getElementById("text").value,
-  name: document.getElementById("name").value,
-  lastname: document.getElementById("lastname").value,
-  alias: document.getElementById("alias").value,
-  age: document.getElementById("age").value,
-  avatar: document.getElementById("avatar").value,
+  author: {
+    email: document.getElementById("email").value,
+    name: document.getElementById("name").value,
+    lastname: document.getElementById("lastname").value,
+    alias: document.getElementById("alias").value,
+    age: document.getElementById("age").value,
+    avatar: document.getElementById("avatar").value,
+  },
   date: new Date().toLocaleString(),
+  text: document.getElementById("text").value,
  };
  socket.emit("new-message", message);
  return;

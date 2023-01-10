@@ -61,4 +61,4 @@ const messagesSchema = new schema.Entity('messages', {
 });
 
 const messagesNormalized = normalize(mensajes, messagesSchema);
-print(messagesNormalized);
+printMessages(messagesNormalized);

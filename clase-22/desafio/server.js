@@ -18,6 +18,7 @@ const sqlite = new ContenedorMensajes(knexSqlite);
 const ContenedorProductos = require("./ContenedorProductos");
 const productsObj = new ContenedorProductos(5);
 const ContenedorMensajesNormalized = require('./ContenedorMensajesNormalized');
+const messagesContainer = new ContenedorMensajesNormalized("messages.txt");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -67,10 +68,10 @@ io.on("connection", (socket) => {
       io.sockets.emit("products", prod);
     });
   });
-  const messageList = ContenedorMensajesNormalized.getAllMessages();
+  const messageList = messagesContainer.getAllMessages();
   socket.emit("messages", messageList);
   socket.on("new-message", (data) => {
-    const message = ContenedorMensajesNormalized.save(data);
+    const message = messagesContainer.save(data);
     io.sockets.emit("messages", message);
   });
 });
