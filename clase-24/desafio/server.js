@@ -1,7 +1,7 @@
 import express from "express";
-import {engine} from "express-handlebars";
-import {Server as HttpServer} from "http";
-import {Server as IOServer} from "socket.io";
+import { engine } from "express-handlebars";
+import { Server as HttpServer } from "http";
+import { Server as IOServer } from "socket.io";
 import knex from "knex";
 import knexSqlite from "knex";
 import cookieParser from "cookie-parser";
@@ -11,7 +11,8 @@ import Contenedor from "./Contenedor.js";
 import ContenedorMensajes from "./ContenedorMensajes.js";
 import ContenedorProductos from "./ContenedorProductos.js";
 import ContenedorMensajesNormalized from "./ContenedorMensajesNormalized.js";
-import { options, optionsSqlite } from "./config/db.js";
+import SessionsController from "./SessionsController.js";
+import { mongoUrl, options, optionsSqlite } from "./config/db.js";
 
 const app = express();
 const httpServer = HttpServer(app);
@@ -23,6 +24,7 @@ const sql = new Contenedor(knexInstance);
 const sqlite = new ContenedorMensajes(knexSqliteInstance);
 const productsObj = new ContenedorProductos(5);
 const messagesContainer = new ContenedorMensajesNormalized("messages.txt");
+const mongoSession = new SessionsController();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -32,27 +34,35 @@ app.set("views", "./public");
 app.set("view engine", "handlebars");
 
 app.use(cookieParser("GianellaCookieTest"));
-const mongoOptions = { useNewUrlParser: true, useUnifiedTopology: true};
+const mongoOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
-app.use(session({
-  store: MongoStore.create({
-    mongoUrl: "mongodb+srv://gianeAdmin:Sl17nI8KqXOjV6a3@desafio24.bmolsth.mongodb.net/?retryWrites=true&w=majority",
-    mongoOptions: mongoOptions,
-    ttl: 600
-  }),
-  secret: "GianeTestSecret",
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(
+  session({
+    store: MongoStore.create({
+      mongoUrl: mongoUrl,
+      mongoOptions: mongoOptions,
+      ttl: 600,
+      autoRemove: "native",
+    }),
+    secret: "GianeTestSecret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 60000,
+    },
+  })
+);
 
 sql.createTable().then(() => console.log("Tabla creada"));
 sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
   req.session.user = req.query.userName;
-  if(req.session.user){
+  const userSessionExist = await mongoSession.getSessionById(req.session.user);
+  if (req.session.user && userSessionExist) {
+    await mongoSession.createSession(req.session.user);
     sql.listProducts().then((prod) => {
-      let products = []
+      let products = [];
       products = prod.map((item) => ({
         productName: item?.productName,
         productPrice: item?.productPrice,
@@ -60,8 +70,8 @@ app.get("/", (req, res) => {
       }));
       res.render("form", { products, user: req.session.user });
     });
-  }else{
-    res.render('login');
+  } else {
+    res.render("login");
   }
 });
 
@@ -76,16 +86,20 @@ app.post("/productos", (req, res) => {
 
 app.get("/productos-test", (req, res) => {
   try {
-      const products = productsObj.generateProducts();
-     res.render("table", {products});
+    const products = productsObj.generateProducts();
+    res.render("table", { products });
   } catch (err) {
-    res.render("modal", { title: "Error al cargar los productos", message: "" });
+    res.render("modal", {
+      title: "Error al cargar los productos",
+      message: "",
+    });
   }
 });
 
-app.get("/logout", (req, res) => {
+app.get("/logout", async (req, res) => {
   const user = req.session.user;
-  res.render('logout', {user});
+  await mongoSession.deleteSession(user);
+  res.render("logout", { user });
   req.session.destroy();
 });
 
