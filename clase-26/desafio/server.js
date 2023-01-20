@@ -13,6 +13,9 @@ import ContenedorProductos from "./ContenedorProductos.js";
 import ContenedorMensajesNormalized from "./ContenedorMensajesNormalized.js";
 import SessionsController from "./SessionsController.js";
 import { mongoUrl, options, optionsSqlite } from "./config/db.js";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import { comparePasswords } from "./utils/encryptPassword.js";
 
 const app = express();
 const httpServer = HttpServer(app);
@@ -32,7 +35,6 @@ app.use(express.static("./public"));
 app.engine("handlebars", engine());
 app.set("views", "./public");
 app.set("view engine", "handlebars");
-
 app.use(cookieParser("GianellaCookieTest"));
 const mongoOptions = { useNewUrlParser: true, useUnifiedTopology: true };
 
@@ -53,13 +55,18 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 sql.createTable().then(() => console.log("Tabla creada"));
 sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
 
+// ------------ Rutas de login  ------------ //
+
 app.get("/", async (req, res) => {
   req.session.user = req.query.userName;
-  const userSessionExist = await mongoSession.getSessionById(req.session.user);
-  if (req.session.user && userSessionExist) {
+  console.log("req.session.user ", req.session.user)
+  if (req.isAuthenticated()) {
     sql.listProducts().then((prod) => {
       let products = [];
       products = prod.map((item) => ({
@@ -74,21 +81,66 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/register", async (req, res) => {
-  try{
-    const userCreation = await mongoSession.createUser(req.body); 
-    if(userCreation === null){
-      return res.render('registerError');
+passport.use(
+  "login",
+  new LocalStrategy(
+    async (userEmail, userPassword, done) => {
+      console.log("en el passport ")
+      const user = await mongoSession.getUserByEmail(userEmail);
+
+      if (user === null) {
+        return done("No se encontró el usuario", false);
+      }
+      if (!comparePasswords(userPassword, user.userPassword)) {
+        return done("Contraseña incorrecta", false);
+      }
+      console.log("va todo bien");
+      return done(null, user);
     }
-    return res.redirect('/');
-  } catch(err){
-    return res.render('registerError');
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user.userName);
+});
+
+passport.deserializeUser(async(userEmail, done) => {
+  const user = await mongoSession.getUserByEmail(userEmail);
+  done(null, user);
+});
+
+app.post("/login", passport.authenticate("login", {
+  failureRedirect: "/loginError",
+  successRedirect: "/"
+}));
+
+app.get("/loginError", (req, res)=>{
+  res.render("loginError");
+})
+
+// ------------ Rutas de registro  ------------ //
+
+app.post("/register", async (req, res) => {
+  try {
+    const userCreation = await mongoSession.createUser(req.body);
+    if (userCreation === null) {
+      return res.render("registerError");
+    }
+    return res.redirect("/");
+  } catch (err) {
+    return res.render("registerError");
   }
 });
 
 app.get("/register", async (req, res) => {
   res.render("register");
 });
+
+app.get("/registerError", (req, res)=>{
+  res.render("registerError");
+})
+
+// ------------ Rutas de productos  ------------ //
 
 app.post("/productos", (req, res) => {
   try {
@@ -110,6 +162,8 @@ app.get("/productos-test", (req, res) => {
     });
   }
 });
+
+// ------------ Ruta de logout  ------------ //
 
 app.get("/logout", async (req, res) => {
   const user = req.session.user;

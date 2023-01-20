@@ -13,11 +13,12 @@ export default class SessionsController{
             createdAt: new Date(),
             userPassword: encryptPassword(session.userPassword)
         }
+        console.log("el usuario ", user)
         const userFounded = await sessionCollectionName.find({userEmail: session.userEmail})
         if(userFounded.length > 0){
             return null;
         }
-        return await sessionCollectionName.create({user});
+        return await sessionCollectionName.create(user);
     }
 
     async getSessionById(session){
@@ -26,6 +27,15 @@ export default class SessionsController{
             return true
         }
         return false;
+    }
+
+    async getUserByEmail(userEmail){
+        const userFounded = await sessionCollectionName.find({userEmail: userEmail});
+        console.log("userFounded ", userFounded)
+        if(userFounded.length > 0){
+            return userFounded
+        }
+        return null;
     }
 
     async deleteSession(session){
