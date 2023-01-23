@@ -11,9 +11,10 @@ export default class SessionsController{
         const user = {
             ...session,
             createdAt: new Date(),
-            userPassword: encryptPassword(session.userPassword)
+            userEmail: session.username,
+            userPassword: encryptPassword(session.password)
         }
-        const userFounded = await sessionCollectionName.find({userEmail: session.userEmail})
+        const userFounded = await sessionCollectionName.find({userEmail: session.username})
         if(userFounded.length > 0){
             return null;
         }
@@ -31,7 +32,7 @@ export default class SessionsController{
     async getUserByEmail(userEmail){
         const userFounded = await sessionCollectionName.find({userEmail: userEmail});
         if(userFounded.length > 0){
-            return userFounded
+            return userFounded[0];
         }
         return null;
     }

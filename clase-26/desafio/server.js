@@ -60,56 +60,53 @@ app.use(passport.session());
 sql.createTable().then(() => console.log("Tabla creada"));
 sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
 
-// ------------ Rutas de login  ------------ //
-
-app.get("/", async (req, res) => {
-  req.session.user = req.query.userName;
-  console.log("req.query.userName ", req.query.userName);
-  if (req.isAuthenticated()) {
-    sql.listProducts().then((prod) => {
-      let products = [];
-      products = prod.map((item) => ({
-        productName: item?.productName,
-        productPrice: item?.productPrice,
-        productImage: item?.productImage,
-      }));
-      res.render("form", { products, user: req.session.user });
-    });
-  } else {
-    res.render("login");
-  }
-});
+//Passport
 
 passport.use(
-  "login",
-  new LocalStrategy(async (userEmail, userPassword, done) => {
-    const user = await mongoSession.getUserByEmail(userEmail);
-    if (user === null) {
-      return done("No se encontró el usuario", false);
+  "register",
+  new LocalStrategy(
+    {
+      usernameField: "userEmail",
+      passwordField: "userPassword",
+      passReqToCallback: true,
+    },
+    async (req, username, password, done) => {
+      const { userName } = req.body;
+      const userCreation = await mongoSession.createUser({
+        userName,
+        username,
+        password,
+      });
+      if (userCreation === null) {
+        done("Error al registrarse", false);
+      }
+      req.session.user = userCreation;
+      done(null, userCreation);
     }
-    if (!comparePasswords(userPassword, user.userPassword)) {
-      return done("Contraseña incorrecta", false);
-    }
-    return done(null, user);
-  })
+  )
 );
 
 passport.use(
   "login",
-  new LocalStrategy((username, password, done) => {
-    const user = mongoSession
-      .getUserByEmail(userEmail)
-      .then((res) => {
-        if (res === null) {
-          return done("No se encontró el usuario", false);
-        }
-        if (!comparePasswords(password, res.userPassword)) {
-          return done("Contraseña incorrecta", false);
-        }
-        return done(null, user);
-      })
-      .catch((err) => console.log("err ", err));
-  })
+  new LocalStrategy(
+    {
+      usernameField: "userEmail",
+      passwordField: "userPassword",
+      passReqToCallback: true,
+    },
+    async (req, username, password, done) => {
+      const user = await mongoSession.getUserByEmail(username);
+      if (user === null) {
+        return done("No se encontró el usuario", false);
+      }
+      const passwordComparedResult = await comparePasswords(password, user.userPassword);
+      if (!passwordComparedResult) {
+        return done("Contraseña incorrecta", false);
+      }
+      req.session.user = user;
+      return done(null, user);
+    }
+  )
 );
 
 passport.serializeUser((user, done) => {
@@ -119,6 +116,26 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (userEmail, done) => {
   const user = await mongoSession.getUserByEmail(userEmail);
   done(null, user);
+});
+
+// ------------ Rutas de login  ------------ //
+
+app.get("/", async (req, res) => {
+  if (req.isAuthenticated()) {
+    req.session.user = req.session.passport.user;
+    const user = req.session.user;
+    sql.listProducts().then((prod) => {
+      let products = [];
+      products = prod.map((item) => ({
+        productName: item?.productName,
+        productPrice: item?.productPrice,
+        productImage: item?.productImage,
+      }));
+      res.render("form", { products, user});
+    });
+  } else {
+    res.render("login");
+  }
 });
 
 app.post(
@@ -134,22 +151,6 @@ app.get("/loginError", (req, res) => {
 });
 
 // ------------ Rutas de registro  ------------ //
-
-passport.use(
-  "register",
-  new LocalStrategy(
-    {
-      passReqToCallback: true,
-    },
-    async (req, done) => {
-      const userCreation = await mongoSession.createUser(req.body);
-      if (userCreation === null) {
-        done("Error al registrarse", false);
-      }
-      done(null, userCreation);
-    }
-  )
-);
 
 app.post(
   "/register",

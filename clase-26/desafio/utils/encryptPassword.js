@@ -7,5 +7,6 @@ export const encryptPassword = (password) => {
 
 export const comparePasswords = async (passwordLogin, passwordFromMongo) => {
   const passwordEncrypted = bcrypt.hashSync(passwordLogin, 10);
-  return await bcrypt.compare(passwordEncrypted, passwordFromMongo);
+  const passwordCompared = await bcrypt.compare(passwordEncrypted, passwordFromMongo);
+  return passwordCompared;
 };
