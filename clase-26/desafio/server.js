@@ -44,7 +44,6 @@ app.use(
       mongoUrl: mongoUrl,
       mongoOptions: mongoOptions,
       ttl: 600,
-      autoRemove: "native",
     }),
     secret: "GianeTestSecret",
     resave: false,
@@ -65,7 +64,7 @@ sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
 
 app.get("/", async (req, res) => {
   req.session.user = req.query.userName;
-  console.log("req.session.user ", req.session.user)
+  console.log("req.query.userName ", req.query.userName);
   if (req.isAuthenticated()) {
     sql.listProducts().then((prod) => {
       let products = [];
@@ -83,62 +82,90 @@ app.get("/", async (req, res) => {
 
 passport.use(
   "login",
-  new LocalStrategy(
-    async (userEmail, userPassword, done) => {
-      console.log("en el passport ")
-      const user = await mongoSession.getUserByEmail(userEmail);
-
-      if (user === null) {
-        return done("No se encontró el usuario", false);
-      }
-      if (!comparePasswords(userPassword, user.userPassword)) {
-        return done("Contraseña incorrecta", false);
-      }
-      console.log("va todo bien");
-      return done(null, user);
+  new LocalStrategy(async (userEmail, userPassword, done) => {
+    const user = await mongoSession.getUserByEmail(userEmail);
+    if (user === null) {
+      return done("No se encontró el usuario", false);
     }
-  )
+    if (!comparePasswords(userPassword, user.userPassword)) {
+      return done("Contraseña incorrecta", false);
+    }
+    return done(null, user);
+  })
+);
+
+passport.use(
+  "login",
+  new LocalStrategy((username, password, done) => {
+    const user = mongoSession
+      .getUserByEmail(userEmail)
+      .then((res) => {
+        if (res === null) {
+          return done("No se encontró el usuario", false);
+        }
+        if (!comparePasswords(password, res.userPassword)) {
+          return done("Contraseña incorrecta", false);
+        }
+        return done(null, user);
+      })
+      .catch((err) => console.log("err ", err));
+  })
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.userName);
+  done(null, user.userEmail);
 });
 
-passport.deserializeUser(async(userEmail, done) => {
+passport.deserializeUser(async (userEmail, done) => {
   const user = await mongoSession.getUserByEmail(userEmail);
   done(null, user);
 });
 
-app.post("/login", passport.authenticate("login", {
-  failureRedirect: "/loginError",
-  successRedirect: "/"
-}));
+app.post(
+  "/login",
+  passport.authenticate("login", {
+    failureRedirect: "/loginError",
+    successRedirect: "/",
+  })
+);
 
-app.get("/loginError", (req, res)=>{
+app.get("/loginError", (req, res) => {
   res.render("loginError");
-})
+});
 
 // ------------ Rutas de registro  ------------ //
 
-app.post("/register", async (req, res) => {
-  try {
-    const userCreation = await mongoSession.createUser(req.body);
-    if (userCreation === null) {
-      return res.render("registerError");
+passport.use(
+  "register",
+  new LocalStrategy(
+    {
+      passReqToCallback: true,
+    },
+    async (req, done) => {
+      const userCreation = await mongoSession.createUser(req.body);
+      if (userCreation === null) {
+        done("Error al registrarse", false);
+      }
+      done(null, userCreation);
     }
-    return res.redirect("/");
-  } catch (err) {
-    return res.render("registerError");
-  }
-});
+  )
+);
 
-app.get("/register", async (req, res) => {
+app.post(
+  "/register",
+  passport.authenticate("register", {
+    failureRedirect: "/registerError",
+    successRedirect: "/",
+  })
+);
+
+app.get("/register", async (_, res) => {
   res.render("register");
 });
 
-app.get("/registerError", (req, res)=>{
+app.get("/registerError", (_, res) => {
   res.render("registerError");
-})
+});
 
 // ------------ Rutas de productos  ------------ //
 
