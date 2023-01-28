@@ -211,12 +211,13 @@ app.get("/logout", async (req, res) => {
 app.get("/api/info", async (req, res) => {
   const memory = util.inspect(process.memoryUsage().rss);
   res.render("info", {
+    arguments: process.argv.slice(2),
     platformName: process.platform,
-    nodeVersion: process.versions.node,
+    nodeVersion: process.version,
     totalMemory: memory,
     execPath: process.execPath,
     pid: process.pid,
-    projectFile: process.argv[1],
+    projectFile: process.cwd(),
   });
 });
 
@@ -224,7 +225,7 @@ app.get("/api/info", async (req, res) => {
 
 app.get("/api/randoms", (req, res) => {
   const cant = req.query;
-  const result = fork(path.resolve(process.cwd(), 'calculateRandomNumbers.js'));
+  const result = fork(path.resolve(process.cwd(), './utils/calculateRandomNumbers.js'));
   result.on('message', numbers => {
     if (numbers == 'listo') {
       result.send('start')
