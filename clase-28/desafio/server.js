@@ -8,7 +8,7 @@ import knexSqlite from "knex";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import MongoStore from "connect-mongo";
-import { fork } from 'child_process'
+import { fork } from "child_process";
 import Contenedor from "./containers/products/Contenedor.js";
 import ContenedorMensajes from "./containers/messages/ContenedorMensajes.js";
 import ContenedorProductos from "./containers/products/ContenedorProductos.js";
@@ -211,7 +211,9 @@ app.get("/logout", async (req, res) => {
 app.get("/api/info", async (req, res) => {
   const memory = util.inspect(process.memoryUsage().rss);
   res.render("info", {
-    arguments: process.argv.slice(2),
+    arguments: process?.argv?.slice(2).length
+      ? process?.argv?.slice(2)
+      : "no se pasaron args",
     platformName: process.platform,
     nodeVersion: process.version,
     totalMemory: memory,
@@ -224,15 +226,15 @@ app.get("/api/info", async (req, res) => {
 // ------------ Ruta de calcular numeros random  ------------ //
 
 app.get("/api/randoms", (req, res) => {
-  const cant = req.query;
-  const result = fork(path.resolve(process.cwd(), './utils/calculateRandomNumbers.js'));
-  result.on('message', numbers => {
-    if (numbers == 'listo') {
-      result.send('start')
-    } else {
-        res.json(numbers)
+  const cant = parseFloat(Object.keys(req.query)[0]);
+  const forkResult = fork("./utils/calculateRandomNumbers.js");
+  forkResult.on("message", (msg) => {
+    if(msg == 'ready'){
+      forkResult.send(cant);
+    }else{
+      res.json(msg);
     }
-})
+  });
 });
 
 io.on("connection", (socket) => {
