@@ -12,6 +12,7 @@ import parseArgs from "minimist";
 import passport from "passport";
 import compression from "compression";
 //------- Fin importación de librerías. Comienzo de importaciones propias del proyecto ----------//
+import ContenedorProductos from "./containers/products/ContenedorProductos.js";
 import ContenedorMensajes from "./containers/messages/ContenedorMensajes.js";
 import ContenedorMensajesNormalized from "./containers/messages/ContenedorMensajesNormalized.js";
 import Contenedor from "./containers/products/Contenedor.js";
@@ -20,6 +21,9 @@ import { puerto } from "./config/argsParser.js";
 import authRouter from './routes/auth.js';
 import productRouter from './routes/products.js';
 import infoRoutes from "./routes/info.js";
+import {logRequest, loginRequest} from "./middlewares/logs.js";
+import { logs } from "./config/logs.js";
+
 export const args = parseArgs(process.argv.slice(2));
 
 const SERVER_MODE = args.serverMode || "FORK";
@@ -41,6 +45,7 @@ function serverExecution() {
   app.use(express.json());
   app.use(express.static("./public"));
   app.use(compression());
+  app.use(logRequest)
   app.engine("handlebars", engine());
   app.set("views", "./public");
   app.set("view engine", "handlebars");
@@ -50,6 +55,7 @@ function serverExecution() {
   const httpServer = HttpServer(app);
   const io = new IOServer(httpServer);
   const PORT = puerto || 8080;
+  const productsObj = new ContenedorProductos(5);
   const messagesContainer = new ContenedorMensajesNormalized("messages.txt");
   const knexSqliteInstance = knexSqlite(optionsSqlite);
   const sqlite = new ContenedorMensajes(knexSqliteInstance);
@@ -79,6 +85,10 @@ function serverExecution() {
   app.use('/productos', productRouter);
   app.use('/api', infoRoutes);
 
+  app.get("*", loginRequest, (_, res) => {
+    res.redirect("/api/info");
+  });
+
   sql.createTable().then(() => console.log("Tabla creada"));
   sqlite.createMessagesTable().then(() => console.log("Tabla mensajes creada"));
 
@@ -86,15 +96,23 @@ function serverExecution() {
     const products = productsObj.generateProducts();
     socket.emit("products", products);
     socket.on("new-product", (data) => {
-      sql.insertProduct(data).then((prod) => {
-        io.sockets.emit("products", prod);
-      });
+      try{
+        sql.insertProduct(data).then((prod) => {
+          io.sockets.emit("products", prod);
+        });
+      }catch(err){
+        logger.error(`Error saving products ${err}`)
+      }
     });
     const messageList = messagesContainer.getAllMessages();
     socket.emit("messages", messageList);
     socket.on("new-message", (data) => {
-      const message = messagesContainer.save(data);
+      try{
+        const message = messagesContainer.save(data);
       io.sockets.emit("messages", message);
+      }catch(err){
+        logger.error(`Error saving messages ${err}`)
+      }
     });
   });
 

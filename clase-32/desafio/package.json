@@ -5,13 +5,16 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./config/benchmarks.js",
+    "start": "0x server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "module": "true",
   "dependencies": {
+    "artillery": "^2.0.0-30",
+    "autocannon": "^7.10.0",
     "bcrypt": "^5.1.0",
     "compression": "^1.7.4",
     "connect-mongo": "^4.6.0",
@@ -31,6 +34,7 @@
     "socket.io": "^4.5.4",
     "sqlite3": "^5.1.2",
     "util": "^0.12.5",
+    "winston": "^3.8.2",
     "yargs": "^17.6.2"
   }
 }

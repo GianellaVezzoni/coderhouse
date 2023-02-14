@@ -67,6 +67,7 @@ export default class ContenedorMensajesNormalized {
       );
       return dataNormalized;
     } catch (err) {
+      logger.error(`Error in getting messages ${err}`)
       return null;
     }
   }
