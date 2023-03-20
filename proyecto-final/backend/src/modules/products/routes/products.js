@@ -1,8 +1,8 @@
 const express = require("express");
-const ProductMongoDbController = require("../containers/mongo/products/ProductMongoDbController");
+const ProductMongoDbController = require("../../../containers/mongo/products/ProductMongoDbController");
 const router = express.Router();
 const isAdmin = true;
-const ProductFirebaseController = require("../containers/firebase/products/ProductFirebaseController");
+const ProductFirebaseController = require("../../../containers/firebase/products/ProductFirebaseController");
 const productFirebase = new ProductFirebaseController();
 
 const verifyRole = (_, res, next) => {

@@ -1,0 +1,22 @@
+.form-container{
+    margin-top: 3%;
+    margin-bottom: 3%;
+}
+
+.box-product-published{
+    background-color: rgb(78, 169, 78);
+    margin-top: 5%;
+    padding: 1%;
+    color: #FFF;
+    width: 50%;
+    border-radius: 10px;
+}
+
+.div-box-container{
+    justify-content: center;
+    display: flex;
+}
+
+.product-table-container{
+    margin-top: 5%;
+}

@@ -6,6 +6,8 @@ import NotFound from "./views/NotFound";
 import Cart from "./views/Cart";
 import Products from "./views/Products";
 import ProductDetail from "./views/ProductDetail";
+import SignUp from "./views/SignUp/SignUp";
+import Login from "./views/Login/Login";
 
 function App() {
  return (
@@ -20,6 +22,8 @@ function App() {
        <Route path="productos" element={<Products />} />
        <Route path="detalle-producto/:id" element={<ProductDetail />} />
        <Route path="*" element={<NotFound />} />
+       <Route path="/registro" element={<SignUp />} />
+       <Route path="/login" element={<Login />} />
       </Route>
      </Routes>
     </BrowserRouter>
