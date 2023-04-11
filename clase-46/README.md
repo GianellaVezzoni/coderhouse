@@ -12,7 +12,7 @@ a [Sails v1](https://sailsjs.com) application
 
 ### Version info
 
-This app was originally generated on Sat Apr 08 2023 17:25:07 GMT-0300 (hora estándar de Argentina) using Sails v1.5.4.
+This app was originally generated on Mon Apr 9 2023 17:25:07 GMT-0300 (hora estándar de Argentina) using Sails v1.5.4.
 
 <!-- Internally, Sails used [`sails-generate@2.0.8`](https://github.com/balderdashy/sails-generate/tree/v2.0.8/lib/core-generators/new). -->
 
